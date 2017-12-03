@@ -8,6 +8,7 @@ public class PosicaoVetor {
 	public PosicaoVetor(int idTermo) {
 		this.idTermo = idTermo;
 	}
+
 	public int getIdTermo() {
 		return idTermo;
 	}

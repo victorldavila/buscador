@@ -34,11 +34,9 @@ public class BooleanRankingModel implements RankingModel {
 	public List<Integer> getOrderedDocs(Map<String, Ocorrencia> mapQueryOcur,
 			Map<String, List<Ocorrencia>> lstOcorrPorTermoDocs) {
 		
-		if(this.operator == OPERATOR.AND)
-		{
+		if(this.operator == OPERATOR.AND) {
 			return intersectionAll(lstOcorrPorTermoDocs);
-		}else
-		{
+		} else {
 			return unionAll(lstOcorrPorTermoDocs);
 		}
 	}

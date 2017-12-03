@@ -40,13 +40,16 @@ public class VectorRankingModel implements RankingModel {
 
     Map<Integer, Double> dj_weight = sumWiqTimesWij(mapQueryOcur, lstOcorrPorTermoDocs);
 
-    return null;
+    return UtilQuery.getOrderedList(dj_weight);
 	}
 
   private Map<Integer, Double> sumWiqTimesWij(Map<String, Ocorrencia> mapQueryOcur,
                               Map<String, List<Ocorrencia>> lstOcorrPorTermoDocs) {
 
     Map<Integer, Double> dj_weight = new HashMap<Integer, Double>();
+
+		double normaQuery = 0;//calculo norma
+		Map<Integer, Double> normaDocumento = new HashMap<>();//calculo norma;
 
 	  for (String key : mapQueryOcur.keySet()){
       List<Ocorrencia> listOcorrenciaPorDoc = lstOcorrPorTermoDocs.get(key);
@@ -56,12 +59,16 @@ public class VectorRankingModel implements RankingModel {
       ocorrenciaPorQuery.getFreq(),
       listOcorrenciaPorDoc.size());
 
-      double normaQuery = 0;//calculo norma
+      normaQuery += Math.pow(wiq, 2);
+
+			normaDocumento.put(ocorrenciaPorQuery.getDocId(), (double) 0);
 
       for (Ocorrencia ocorrenciaPorTermo : listOcorrenciaPorDoc) {
         double wij = tfIdf(idxPrecompVals.getNumDocumentos(),
         ocorrenciaPorTermo.getFreq(),
         listOcorrenciaPorDoc.size());
+
+        normaDocumento.put(ocorrenciaPorQuery.getDocId(), normaDocumento.get(ocorrenciaPorQuery.getDocId()) + Math.pow(wij, 2)) ;
 
         if (dj_weight.containsKey(key)) {
           double sum = dj_weight.get(key);
@@ -70,11 +77,18 @@ public class VectorRankingModel implements RankingModel {
         } else {
           dj_weight.put(ocorrenciaPorQuery.getDocId(), (wij * wiq));
         }
-
-        double normaDocumento = 0;//calculo norma;
       }
     }
 
-    return dj_weight;
+    return updateSimilarity(dj_weight, normaQuery, normaDocumento);
+  }
+
+  private Map<Integer, Double> updateSimilarity(Map<Integer, Double> djWeight, double normaQuerry, Map<Integer, Double> normaDoc) {
+    for (Integer docId : djWeight.keySet()) {
+      djWeight.put(docId,
+          djWeight.get(docId) / (normaDoc.get(docId) * normaQuerry));
+    }
+
+    return djWeight;
   }
 }

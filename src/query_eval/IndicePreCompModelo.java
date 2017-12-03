@@ -99,7 +99,6 @@ public class IndicePreCompModelo {
 	}
 
 	public double getAvgLenPerDocument() {
-		
 		return avgLenPerDocument;
 	}
 
