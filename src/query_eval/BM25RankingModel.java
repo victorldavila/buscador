@@ -24,9 +24,8 @@ public class BM25RankingModel implements RankingModel {
 	 * @param numDocsArticle
 	 * @return
 	 */
-	public double idf(int numDocs,int numDocsArticle)
-	{
-		return 0.0;
+	public double idf(int numDocs,int numDocsArticle) {
+		return Math.log((numDocs - numDocsArticle + 0.5) / (numDocsArticle + 0.5));
 	}
 
 	/**
@@ -34,8 +33,8 @@ public class BM25RankingModel implements RankingModel {
 	 * @param freqTermDoc
 	 * @return
 	 */
-	public double beta_ij(int freqTermDoc) {
-		return 0;
+	public double beta_ij(int freqTermDoc, int docLength) {
+		return ((k1 + 1) * freqTermDoc) / (k1 * ((1 - b) + b * (docLength / idxPrecompVals.getAvgLenPerDocument()) + freqTermDoc));
 	}
 	
 	/**
@@ -50,9 +49,24 @@ public class BM25RankingModel implements RankingModel {
 	public List<Integer> getOrderedDocs(Map<String, Ocorrencia> mapQueryOcur,
 			Map<String, List<Ocorrencia>> lstOcorrPorTermoDocs) {
 		
-		
 		Map<Integer,Double> dj_weight = new HashMap<Integer,Double>();
 
-		return null;
+		for (String key : mapQueryOcur.keySet()) {
+			List<Ocorrencia> listOcorrenciaPorDoc = lstOcorrPorTermoDocs.get(key);
+
+			double idf = idf(idxPrecompVals.getNumDocumentos(), listOcorrenciaPorDoc.size());
+
+			for (Ocorrencia ocorrencia : listOcorrenciaPorDoc) {
+				double beta = beta_ij(ocorrencia.getFreq(), idxPrecompVals.getDocumentLength(ocorrencia.getDocId()));
+
+				if (dj_weight.containsKey(key)) {
+					dj_weight.put(ocorrencia.getDocId(), dj_weight.get(ocorrencia.getDocId()) + (beta * idf));
+				} else {
+					dj_weight.put(ocorrencia.getDocId(), beta * idf);
+				}
+			}
+		}
+
+		return UtilQuery.getOrderedList(dj_weight);
 	}
 }

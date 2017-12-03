@@ -16,6 +16,7 @@ public class IndicePreCompModelo {
 
 	private int numDocumentos = 0;
 	private double avgLenPerDocument = 0;
+
 	private Map<Integer,Integer> tamPorDocumento = new HashMap<Integer,Integer>();
 	private Map<Integer,Double> normaPorDocumento = new HashMap<Integer,Double>();
 	

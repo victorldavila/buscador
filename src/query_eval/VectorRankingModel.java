@@ -49,7 +49,6 @@ public class VectorRankingModel implements RankingModel {
     Map<Integer, Double> dj_weight = new HashMap<Integer, Double>();
 
 		double normaQuery = 0;//calculo norma
-		Map<Integer, Double> normaDocumento = new HashMap<>();//calculo norma;
 
 	  for (String key : mapQueryOcur.keySet()){
       List<Ocorrencia> listOcorrenciaPorDoc = lstOcorrPorTermoDocs.get(key);
@@ -61,14 +60,10 @@ public class VectorRankingModel implements RankingModel {
 
       normaQuery += Math.pow(wiq, 2);
 
-			normaDocumento.put(ocorrenciaPorQuery.getDocId(), (double) 0);
-
       for (Ocorrencia ocorrenciaPorTermo : listOcorrenciaPorDoc) {
         double wij = tfIdf(idxPrecompVals.getNumDocumentos(),
         ocorrenciaPorTermo.getFreq(),
         listOcorrenciaPorDoc.size());
-
-        normaDocumento.put(ocorrenciaPorQuery.getDocId(), normaDocumento.get(ocorrenciaPorQuery.getDocId()) + Math.pow(wij, 2)) ;
 
         if (dj_weight.containsKey(key)) {
           double sum = dj_weight.get(key);
@@ -80,13 +75,13 @@ public class VectorRankingModel implements RankingModel {
       }
     }
 
-    return updateSimilarity(dj_weight, normaQuery, normaDocumento);
+    return updateSimilarity(dj_weight, normaQuery);
   }
 
-  private Map<Integer, Double> updateSimilarity(Map<Integer, Double> djWeight, double normaQuerry, Map<Integer, Double> normaDoc) {
+  private Map<Integer, Double> updateSimilarity(Map<Integer, Double> djWeight, double normaQuerry) {
     for (Integer docId : djWeight.keySet()) {
       djWeight.put(docId,
-          djWeight.get(docId) / (normaDoc.get(docId) * normaQuerry));
+          djWeight.get(docId) / idxPrecompVals.getNormaDocumento(docId) * normaQuerry);
     }
 
     return djWeight;
